@@ -1,0 +1,72 @@
+.macro push (%reg)
+	sw %reg, 0(sp)
+	addi sp, sp, -4
+.end_macro
+
+.macro pop (%reg)
+	addi sp, sp, 4
+	lw %reg, 0(sp)
+.end_macro
+
+.eqv start_address t0
+.eqv end_address t1
+.eqv ptr t2
+.eqv val t3
+
+.data
+array: .word 3, 124, 6, 1, 113, 190
+array_len: .word 
+
+.text
+main:
+	la start_address, array
+	lw t4, array_len
+	add end_address, start_address, t4
+	mv ptr, start_address
+
+pushloop:
+	lw val, 0(ptr)
+	push val
+	addi ptr, ptr, 4
+	bne ptr, end_address, pushloop
+	
+	mv ptr, start_address
+	
+poploop1:
+	pop val
+	sw val, 0(ptr)
+	addi ptr, ptr, 4
+	bne ptr, end_address, poploop1
+	
+push_ungerade:
+	mv ptr, start_address
+loop1:
+	lw val, 0(ptr)
+	andi val, val, 1
+	beqz val, even
+	push val
+	
+even:
+	addi ptr, ptr, 4
+	bne ptr, end_address, loop1
+	
+push_gerade:
+	mv ptr, start_address
+loop2:
+	lw val, 0(ptr)
+	andi val, val, 1
+	bnez val, odd
+	push val
+	
+odd:
+	addi ptr, ptr, 4
+	bne ptr, end_address, loop2
+
+poploop2:
+	pop val
+	sw val, 0(ptr)
+	addi ptr, ptr, 4
+	bne ptr, end_address, poploop2
+
+end:
+j end
