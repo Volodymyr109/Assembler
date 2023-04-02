@@ -1,0 +1,56 @@
+.data
+prompt1: .asciz "6"
+prompt2: .asciz "9"
+greater: .asciz "Greater integer: "
+
+buffer1: .space 8
+buffer2: .space 8
+
+.text
+_start:
+# Read first integer
+li a7, 4 # write integer
+la a0, prompt1
+ecall
+
+li a7, 8 # read integer
+la a0, buffer1
+li a1, 8
+ecall
+
+# Read second integer
+li a7, 4 # write integer
+la a0, prompt2
+ecall
+
+li a7, 8 # read integer
+la a0, buffer2
+li a1, 8
+ecall
+
+# Compare integers and store greater value in a0
+la t0, prompt1
+la t1, prompt2
+lw a1, 0(t0)
+lw a2, 0(t1)
+slt a0, a1, a2
+beqz a0, print_int1
+mv a0, a2
+j print_result
+
+print_int1:
+mv a0, a1
+
+print_result:
+# Print result
+li a7, 4 # write string
+la a0, greater
+ecall
+
+li a7, 1 # print integer
+ecall
+
+j end
+
+end:
+j end

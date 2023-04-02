@@ -1,0 +1,100 @@
+.eqv filedescriptor s0
+
+.data
+path: .asciz "/Users/38096/Desktop/test/test.txt"
+outpath: .asciz "/Users/38096/Desktop/test/test2.txt"
+errormsg: .asciz "Open file error.\n"
+buffer: .space 128
+bufferlen: .word 128
+
+.text
+_start:
+	li a7, 1024 # open file
+	la a0, path
+	li a1, 0
+	ecall
+	
+	li t2, -1
+	beq a0, t2, error
+	
+	mv filedescriptor, a0
+	
+	li a7, 63 # read file
+	la a1, buffer
+	la t0, bufferlen
+	lw a2, 0(t0)
+	ecall
+	
+	mv s1, a0 # number of chars
+	
+	li a7, 57 # close file
+	mv a0, filedescriptor
+	ecall
+	
+
+	
+	li a7, 4 # print string
+	la a0, buffer
+	ecall
+	
+	call rot13
+	
+	li a7, 4 # print string
+	la a0, buffer
+	ecall
+	
+	li a7, 1024 # open file
+	la a0, outpath
+	li a1, 1
+	ecall
+	
+	li t2, -1
+	beq a0, t2, error
+	
+	mv filedescriptor, a0
+	
+	li a7, 64 # write file
+	la a1, buffer
+	mv a2, s1
+	ecall
+	
+	li a7, 57 # close file
+	mv a0, filedescriptor
+	ecall
+	
+	
+end:
+	li a7, 10
+	ecall
+	
+rot13:
+	# a0: address of string
+	mv t0, a0
+rot13_loop:
+	lb t1, 0(t0)
+	beqz t1, rot13_done
+	li t2, 'a'
+	blt t1, t2, rot13_next
+	li t2, 'z'
+	bgt t1, t2, rot13_next
+	
+	addi t1, t1, -32
+	ble t1, t2, rot13_next
+	
+	addi t1, t1, 64
+	
+rot13_next:
+	sb t1, 0(t0)
+	addi t0, t0, 1
+	j rot13_loop
+	
+rot13_done:
+	ret
+	
+error:
+	li a7, 4 # print string
+	la a0, errormsg
+	ecall
+
+	li a7, 10
+	ecall
